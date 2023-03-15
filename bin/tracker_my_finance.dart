@@ -1,15 +1,13 @@
-import 'package:shelf/shelf_io.dart' as shalf_io;
+import 'package:shelf/shelf.dart';
 
-import 'server_handler.dart';
+import 'api/blog_api.dart';
+import 'api/login_api.dart';
+import 'infra/custom_server.dart';
 
 void main() async {
-  var serverHandler = TrackerFinanceServerHandler();
+  var cascadeHandler = Cascade().add(LoginApi().handler).add(BlogApi().handler).handler;
 
-  final server = await shalf_io.serve(
-    serverHandler.handler,
-    'localhost',
-    8080,
-  );
+  var handler = Pipeline().addMiddleware(logRequests()).addHandler(cascadeHandler);
 
-  print('Nosso servidor foi iniciado em: http://${server.address.host}:${server.port}');
+  CustomServer().initialize(handler);
 }
